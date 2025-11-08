@@ -1,0 +1,11 @@
+[build]
+builder = "heroku/buildpacks:20"
+
+[deploy]
+healthcheckPath = "/ping"
+healthcheckTimeout = 300
+
+[[services]]
+name = "web"
+[[services.ports]]
+port = 8000

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Analytics Dashboard</title>
+
+  <!-- ========== CSS STYLING ========== -->
+  <style>
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      margin: 0;
+      background: #f5f6fa;
+      color: #333;
+    }
+
+    header {
+      background: linear-gradient(90deg, #2c3e50, #4ca1af);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 30px 40px;
+    }
+
+    section {
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      color: #2c3e50;
+      border-left: 4px solid #4ca1af;
+      padding-left: 10px;
+    }
+
+    input[type="file"],
+    input[type="text"] {
+      padding: 8px;
+      margin: 6px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #4ca1af;
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin: 5px;
+    }
+
+    button:hover:not(:disabled) {
+      background: #2c3e50;
+    }
+
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background: #95a5a6;
+    }
+
+    button.secondary:hover:not(:disabled) {
+      background: #7f8c8d;
+    }
+
+    button.danger {
+      background: #e74c3c;
+    }
+
+    button.danger:hover:not(:disabled) {
+      background: #c0392b;
+    }
+
+    img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin: 10px 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid #ddd;
+    }
+
+    .result-box {
+      background: #f9f9f9;
+      border-left: 5px solid #4ca1af;
+      padding: 15px 20px;
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+
+    .local-result-box {
+      background: #f9f9f9;
+      border-left: 5px solid #27ae60;
+      padding: 15px 20px;
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+
+    .info-box {
+      background: #e8f4fd;
+      border-left: 5px solid #3498db;
+      padding: 15px 20px;
+      margin: 15px 0;
+      border-radius: 8px;
+    }
+
+    .warning-box {
+      background: #fef9e7;
+      border-left: 5px solid #f39c12;
+      padding: 15px 20px;
+      margin: 15px 0;
+      border-radius: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      background: #2c3e50;
+      color: white;
+      margin-top: 40px;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .loading {
+      color: #4ca1af;
+      font-style: italic;
+      padding: 10px;
+    }
+
+    .error {
+      color: #e74c3c;
+      font-weight: bold;
+      background: #fdedec;
+      padding: 10px;
+      border-radius: 6px;
+      border-left: 4px solid #e74c3c;
+    }
+
+    .success {
+      color: #27ae60;
+      font-weight: bold;
+      background: #eafaf1;
+      padding: 10px;
+      border-radius: 6px;
+      border-left: 4px solid #27ae60;
+    }
+
+    .plot-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .plot-item {
+      flex: 1;
+      min-width: 300px;
+      text-align: center;
+    }
+
+    .plot-item h4 {
+      margin: 10px 0;
+      color: #2c3e50;
+    }
+
+    code {
+      background: #2c3e50;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .api-status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+
+    .status-connected {
+      background: #27ae60;
+      color: white;
+    }
+
+    .status-disconnected {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .status-checking {
+      background: #f39c12;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    🧠 Data Analytics Dashboard 
+    <span id="apiStatus" class="api-status status-checking">Checking API...</span>
+  </header>
+
+  <main>
+    <!-- CSV Upload and Data Analysis -->
+    <section id="analysis">
+      <h2>Step 1: Upload and Analyze CSV Data</h2>
+      <div class="info-box">
+        <strong>📊 Data Analysis Ready</strong><br>
+        Upload any CSV file with numeric columns to perform regression analysis and generate visualizations.
+        The system automatically detects numeric columns and selects the best predictors.
+      </div>
+      
+      <input type="file" id="csvfile" accept=".csv" />
+      <button id="analyze">Upload & Analyze</button>
+      
+      <div id="results"></div>
+    </section>
+
+    <!-- Local Storage Section -->
+    <section id="localStorage">
+      <h2>Step 2: Save Results Locally</h2>
+      <div class="info-box">
+        <strong>💾 Browser Storage</strong><br>
+        Save your analysis results to your browser's local storage for later access. 
+        Data persists even after closing the browser.
+      </div>
+
+      <label for="modelName">Model Name / Formula:</label>
+      <input id="modelName" type="text" placeholder="Example: mpg ~ hp + wt" />
+
+      <label for="rSquared">R-Squared Value:</label>
+      <input id="rSquared" type="text" placeholder="Example: 0.8268" />
+
+      <div>
+        <button id="saveLocal">Save to Local Storage</button>
+        <button id="loadLocal" class="secondary">Load Local Results</button>
+        <button id="clearLocal" class="danger">Clear All Local Data</button>
+      </div>
+      
+      <div id="localResults"></div>
+    </section>
+
+    <!-- Deployment Info -->
+    <section id="deploymentInfo">
+      <h2>Deployment Information</h2>
+      <div class="warning-box">
+        <strong>🌐 Deployment Ready</strong><br>
+        This application is configured for both local development and production deployment.<br><br>
+        
+        <strong>API Endpoint:</strong> <code id="apiEndpoint">Checking...</code><br>
+        <strong>Frontend URL:</strong> <code id="frontendUrl">Loading...</code><br><br>
+        
+        For production deployment, deploy both:
+        <ul>
+          <li><strong>Frontend:</strong> Netlify, Vercel, or GitHub Pages</li>
+          <li><strong>API:</strong> Railway, Heroku, or Digital Ocean</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Data Analytics Dashboard | Powered by R + JavaScript | Deployment Ready
+  </footer>
+
+  <!-- ========== JAVASCRIPT SECTION ========== -->
+  <script>
+    // Configuration - Auto-detects environment
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_BASE_URL = isLocalhost 
+      ? 'http://localhost:8000' 
+      : window.location.origin;
+
+    // DOM elements
+    const apiStatus = document.getElementById('apiStatus');
+    const apiEndpoint = document.getElementById('apiEndpoint');
+    const frontendUrl = document.getElementById('frontendUrl');
+
+    // Initialize deployment info
+    frontendUrl.textContent = window.location.origin;
+    apiEndpoint.textContent = API_BASE_URL;
+
+    // Check API status on load
+    checkApiStatus();
+
+    // --- Analyze CSV via R API ---
+    document.getElementById("analyze").onclick = async () => {
+      const file = document.getElementById("csvfile").files[0];
+      if (!file) return alert("Please select a CSV file.");
+
+      const form = new FormData();
+      form.append("file", file);
+      const resultDiv = document.getElementById("results");
+      resultDiv.innerHTML = "<div class='loading'>⏳ Processing... Please wait. This may take a few seconds.</div>";
+      const button = document.getElementById("analyze");
+      button.disabled = true;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/analyze`, {
+          method: "POST",
+          body: form,
+        });
+
+        // Handle non-JSON responses
+        let data;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+        }
+
+        if (!response.ok) {
+          throw new Error(data.error || `Server error: ${response.status}`);
+        }
+
+        // Display results
+        resultDiv.innerHTML = `
+          <div class='result-box'>
+            <h3>📊 Analysis Results</h3>
+            <b>Formula:</b> ${data.formula}<br>
+            <b>R-Squared:</b> ${data.r_squared}<br>
+            <b>Target Variable:</b> ${data.target}<br>
+            <b>Predictors:</b> ${data.predictors.join(", ")}<br><br>
+            <b>Coefficients:</b><pre>${JSON.stringify(data.coefficients, null, 2)}</pre>
+            
+            <div class="plot-container">
+              <div class="plot-item">
+                <h4>Scatter Plot with Regression Line</h4>
+                <img src='${data.plots.scatter}' alt='Scatter Plot' 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                     loading="lazy" />
+                <div style="display: none; color: #e74c3c;">Image failed to load</div>
+              </div>
+              <div class="plot-item">
+                <h4>Residuals vs Fitted Values</h4>
+                <img src='${data.plots.residuals}' alt='Residual Plot' 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                     loading="lazy" />
+                <div style="display: none; color: #e74c3c;">Image failed to load</div>
+              </div>
+            </div>
+            
+            <details>
+              <summary><strong>View Full Summary</strong></summary>
+              <pre style="background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto;">${data.summary.join('\n')}</pre>
+            </details>
+          </div>
+        `;
+
+        // Pre-fill model info for local storage
+        document.getElementById("modelName").value = data.formula;
+        document.getElementById("rSquared").value = data.r_squared;
+
+        // Update API status
+        apiStatus.className = 'api-status status-connected';
+        apiStatus.textContent = 'API Connected';
+
+      } catch (error) {
+        console.error("Analysis error:", error);
+        resultDiv.innerHTML = `
+          <div class="error">
+            ❌ Analysis Failed: ${error.message}<br><br>
+            <strong>Troubleshooting:</strong>
+            <ul>
+              <li>Ensure your R API server is running</li>
+              <li>Check that the CSV file has numeric columns</li>
+              <li>Verify network connectivity</li>
+              <li>Check browser console for detailed errors</li>
+            </ul>
+            <strong>API Status:</strong> <span id="currentApiStatus">Checking...</span>
+          </div>
+        `;
+        
+        // Re-check API status
+        checkApiStatus().then(status => {
+          document.getElementById('currentApiStatus').textContent = status;
+        });
+      } finally {
+        button.disabled = false;
+      }
+    };
+
+    // --- Local Storage Functions ---
+    
+    // Save result to local storage
+    document.getElementById("saveLocal").onclick = () => {
+      const modelName = document.getElementById("modelName").value.trim();
+      const rSquared = document.getElementById("rSquared").value.trim();
+      
+      if (!modelName || !rSquared) {
+        alert("Please fill in both Model Name and R-Squared value.");
+        return;
+      }
+
+      const results = JSON.parse(localStorage.getItem('analysisResults') || '[]');
+      const newResult = {
+        id: Date.now(),
+        model: modelName,
+        rSquared: rSquared,
+        timestamp: new Date().toLocaleString(),
+        date: new Date().toISOString()
+      };
+      
+      results.push(newResult);
+      localStorage.setItem('analysisResults', JSON.stringify(results));
+      
+      document.getElementById("localResults").innerHTML = 
+        `<div class="success">✅ Result saved locally! (Total: ${results.length} results)</div>`;
+    };
+
+    // Load results from local storage
+    document.getElementById("loadLocal").onclick = () => {
+      const results = JSON.parse(localStorage.getItem('analysisResults') || '[]');
+      const resultsDiv = document.getElementById('localResults');
+      
+      if (results.length === 0) {
+        resultsDiv.innerHTML = "<div class='info-box'>No local results stored yet.</div>";
+        return;
+      }
+      
+      // Sort by most recent first
+      results.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      let html = `<div class="success">📁 Found ${results.length} stored results:</div>`;
+      results.forEach(result => {
+        html += `
+          <div class='local-result-box'>
+            <b>Model:</b> ${result.model}<br>
+            <b>R²:</b> ${result.rSquared}<br>
+            <b>Saved:</b> ${result.timestamp}<br>
+            <small>ID: ${result.id}</small>
+          </div>
+        `;
+      });
+      resultsDiv.innerHTML = html;
+    };
+
+    // Clear local storage
+    document.getElementById("clearLocal").onclick = () => {
+      if (confirm("Are you sure you want to clear ALL locally stored results? This cannot be undone.")) {
+        localStorage.removeItem('analysisResults');
+        document.getElementById("localResults").innerHTML = 
+          "<div class='info-box'>All local results have been cleared.</div>";
+      }
+    };
+
+    // --- API Status Check ---
+    async function checkApiStatus() {
+      try {
+        apiStatus.className = 'api-status status-checking';
+        apiStatus.textContent = 'Checking API...';
+        
+        const response = await fetch(`${API_BASE_URL}/ping`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          // Add timeout for the fetch
+          signal: AbortSignal.timeout(5000)
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          apiStatus.className = 'api-status status-connected';
+          apiStatus.textContent = `API Connected (${data.time ? 'Live' : 'Ready'})`;
+          return 'Connected';
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (error) {
+        console.warn('API status check failed:', error);
+        apiStatus.className = 'api-status status-disconnected';
+        apiStatus.textContent = 'API Disconnected';
+        return 'Disconnected';
+      }
+    }
+
+    // Add timeout to fetch (polyfill for older browsers)
+    if (!AbortSignal.timeout) {
+      AbortSignal.timeout = function(ms) {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(new Error("Timeout")), ms);
+        return controller.signal;
+      };
+    }
+
+    // Auto-load results when page loads
+    window.addEventListener('load', () => {
+      const results = JSON.parse(localStorage.getItem('analysisResults') || '[]');
+      if (results.length > 0) {
+        document.getElementById("localResults").innerHTML = 
+          `<div class="info-box">💡 You have ${results.length} saved results. Click "Load Local Results" to view them.</div>`;
+      }
+      
+      // Update deployment info
+      frontendUrl.textContent = window.location.origin;
+      apiEndpoint.textContent = API_BASE_URL;
+    });
+
+    // Add file input helper
+    document.getElementById('csvfile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        console.log('File selected:', file.name, 'Size:', (file.size / 1024).toFixed(2), 'KB');
+      }
+    });
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // Ctrl + Enter to analyze (when file input is focused)
+      if (e.ctrlKey && e.key === 'Enter') {
+        const fileInput = document.getElementById('csvfile');
+        if (fileInput.files.length > 0) {
+          document.getElementById('analyze').click();
+        }
+      }
+    });
+
+    // Export for global access (useful for debugging)
+    window.AppConfig = {
+      API_BASE_URL,
+      isLocalhost,
+      version: '1.0.0'
+    };
+
+    console.log('Data Analytics Dashboard loaded:', {
+      apiUrl: API_BASE_URL,
+      environment: isLocalhost ? 'development' : 'production',
+      timestamp: new Date().toISOString()
+    });
+  </script>
+</body>
+</html>

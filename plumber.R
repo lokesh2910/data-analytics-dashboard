@@ -412,7 +412,7 @@ function(req, res) {
 }
 
 #---------------------------------------------------
-# 8️⃣ Run the API
+# 8️⃣ Startup Message
 #---------------------------------------------------
 cat("=============================================\n")
 cat("Data Analytics API Starting...\n")
@@ -422,11 +422,6 @@ cat("Environment:", ifelse(port == 8000, "development", "production"), "\n")
 cat("Working directory:", getwd(), "\n")
 cat("WWW directory:", www_dir, "\n")
 cat("=============================================\n")
-
-# Create plumber router
-pr <- plumber::plumb('plumber.R')
-
-# Add startup message
 cat("API endpoints available:\n")
 cat("- GET  /ping         Health check\n")
 cat("- GET  /info         API information\n")
@@ -435,6 +430,3 @@ cat("- POST /analyze      Data analysis\n")
 cat("- POST /dataset-info Dataset info\n")
 cat("- GET  /<filename>   Serve static files\n")
 cat("=============================================\n")
-
-# Run the API
-pr$run(host = '0.0.0.0', port = port, swagger = FALSE)
